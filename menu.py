@@ -1,9 +1,10 @@
 import pygame
 import snake
 import options
+import time
 
 pygame.init()
-
+pygame.mixer.init()
 display_width = 1280
 display_height = 720
 
@@ -12,15 +13,17 @@ d_white = (250, 250, 250)
 black = (0, 0, 0)
 teal = (0, 128, 128)
 blue_black = (50, 50, 50)
+red=(254,95,85)
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 clock=pygame.time.Clock()
 
 #image of snake for menu TODO: maybe make it move if possible
-kawaiisnake=pygame.image.load("E:\CGM\kawaiisnakexx.png")
+kawaiisnake=pygame.image.load("E:\CGM\snakepy\kawaiisnakexx.png")
+bg=pygame.image.load("E:\CGM\snakepy\8bitbg.png")
+gobg=pygame.image.load("E:\CGM\snakepy\gobg.png")
 
 #display fn for all clipart TODO: dont you dare make another one
-def clipdisp(x,y,z):
-    gameDisplay.blit(z,(x,y))
+
 
 def text_objects(text,font,colorfg):
     textSurface=font.render(text,True,colorfg)
@@ -44,10 +47,40 @@ def option(optionno):
     for i in range(1,4):    
         message_display(option[i-1],color[i-1],i-1)
 
+def gameOver():
+    message_display("Game Over",teal,0)
+    pygame.display.update()
+    crash = False
+    if pygame.mixer.get_init():
+        pygame.mixer.music.load('E:\\CGM\\snakepy\\gover.mp3')
+        pygame.mixer.music.play(-1)
+    time.sleep(5)
+    while not crash:
+        for event in pygame.event.get():
+            if event.type==pygame.KEYDOWN:
+                if pygame.mixer.get_init():
+                    pygame.mixer.music.stop()
+                crash=True
+                break
 def newgame():
+    if pygame.mixer.get_init():
+        pygame.mixer.music.stop()
     print("w1")
     snake.game()
-    gameDisplay.fill(white)
+    options.clipdisp(0,0,gobg)
+    gameOver()
+    options.clipdisp(0,0,bg)
+    if pygame.mixer.get_init():
+        pygame.mixer.music.load('E:\\CGM\\snakepy\\backmu.mp3')
+        pygame.mixer.music.play(-1)
+
+
+def title():
+    largeText = pygame.font.Font("E:\CGM\snakepy\KidPixies.ttf",100)
+    TextSurf, TextRect = text_objects("SNAKE", largeText,red)
+    TextRect.center = ((display_width/2),(display_height/2-90))
+    gameDisplay.blit(TextSurf, TextRect)
+
 
 def settings():
     print("w2")
@@ -59,14 +92,18 @@ def exiter():
     quit()     
 
 def menu():
+    pygame.mixer.music.load('E:\\CGM\\snakepy\\backmu.mp3')
+    pygame.mixer.music.play(-1)
     y=1
     pygame.display.set_caption("menu")
     crashed=False
     gameDisplay.fill(white)
     pygame.display.update()
     while not crashed:
-        clipdisp((display_width/2-120),(display_height/2-300),kawaiisnake)
+        options.clipdisp(0,0,bg)
+        options.clipdisp((display_width/2-120),(display_height/2-330),kawaiisnake)
         option(y)
+        title()
         for event in pygame.event.get():
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_DOWN:
@@ -90,6 +127,6 @@ def menu():
             if event.type==pygame.QUIT:
                 crashed=True
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(120)
 
-menu()       
+menu()
