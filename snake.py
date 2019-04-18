@@ -23,7 +23,7 @@ clock = pygame.time.Clock()
 factor = 10
 got_food = pygame.mixer.Sound("E:\CGM\snakepy\coin.wav")
 so_dead=pygame.mixer.Sound("E:\CGM\snakepy\dead.wav")
-class snake_body:
+class snake_body:   
     x = 0
     y = 0
 
@@ -35,13 +35,17 @@ class snake_body:
 class level_pop:
     x = 0
     y = 0
+    xf=0
+    yf=0
     color=black
 
 
-    def __init__(self, x_position, y_position,colorp):
+    def __init__(self, x_position, y_position,colorp,xfac,yfac):
         self.x = x_position
         self.y = y_position
         self.color=colorp
+        self.xf=xfac
+        self.yf=yfac
 
 snake = []
 danger=[]
@@ -49,6 +53,19 @@ def snake_start(snake):
     del snake[:]
     for i in range(16):
         snake.append(snake_body(100, (100+(10*(15-i)))))
+
+
+def text_objects(text,font,colorfg):
+    textSurface=font.render(text,True,colorfg)
+    return textSurface, textSurface.get_rect()
+
+def scoredisp(score):
+
+    text="current score is: "+str(score)
+    largeText = pygame.font.Font('04b_30__.ttf',10)
+    TextSurf, TextRect = text_objects(text, largeText,black)
+    TextRect.center = ((5),(5))
+    game_display.blit(TextSurf, TextRect)
 
 
 # class food():
@@ -59,9 +76,11 @@ def snake_start(snake):
 
 def block(displaywidth,displayht):
     z=[]
+    x=10
+    y=10
     for i in range(13):
-        x=random.randrange(0,displaywidth-100)
-        y=random.randrange(0,displayht-100)
+        x=random.randrange(10,displaywidth-100,70)
+        y=random.randrange(10,displayht-100,70)
         z.append(snake_body(x,y))
     return z
 
@@ -69,14 +88,16 @@ def levelcr(level):
     global danger
     k=0
     for i in range(len(level)):
-        l=random.randrange(4,8)
+        l=random.randrange(2,8)
+        print("xyz:",l)
         for j in range(0,40,l):
             if l%2==0:
-                danger.append(level_pop(level[i].x+k*10,level[i].y,brown))
+                danger.append(level_pop(level[i].x+k*10,level[i].y,brown,10,10))
                 k+=1
             else:
-                
-                danger.append(level_pop(level[i].x+k*10,level[i].y+k*10,blue1))
+                xf=random.randrange(3,7)*10
+                yf=random.randrange(3,7)*10
+                danger.append(level_pop(level[i].x,level[i].y,blue1,xf,yf))
                 k+=1
 #moves snake
 def update_snake(score):
@@ -102,8 +123,13 @@ def check_death():
                 pygame.mixer.music.stop()
             return True
     for i in range(len(danger)):
-        if snake[0].x < danger[i].x+10 and snake[0].x > danger[i].x-10 and snake[0].y < danger[i].y+10 and snake[0].y >danger[i].y-10:
-            return True    
+        if danger[i].color==brown:
+            if snake[0].x < danger[i].x+10 and snake[0].x > danger[i].x-10 and snake[0].y < danger[i].y+10 and snake[0].y >danger[i].y-10:
+                return True
+        elif danger[i].color==blue1:
+            if snake[0].x < danger[i].x+danger[i].xf and snake[0].x > danger[i].x and snake[0].y < danger[i].y+danger[i].yf and snake[0].y >danger[i].y:
+                if len(snake)>6:
+                    snake.pop()
     return False
 #draws on display environment
 def drawsnake(snake):
@@ -116,18 +142,19 @@ def drawsnake(snake):
             pygame.draw.rect(game_display, white, (snake[i].x, snake[i].y, factor, factor))
             x = True
     for i in range(len(danger)):
-        pygame.draw.rect(game_display, danger[i].color, (danger[i].x, danger[i].y, factor, factor))
-
-
+        if danger[i].color==brown:
+            pygame.draw.rect(game_display, danger[i].color, (danger[i].x, danger[i].y, danger[i].xf, danger[i].yf))
+        elif danger[i].color==blue1:
+            pygame.draw.rect(game_display,danger[i].color,(danger[i].x,danger[i].y,danger[i].xf,danger[i].yf))
 
 
 def food():
     food_x = random.randrange(5, display_width - 5)
     food_y = random.randrange(5, display_height - 5)
     for i in range(len(danger)):
-        if food_x < danger[i].x+10 and food_x > danger[i].x-10 and food_y < danger[i].y+10 and food_y >danger[i].y-10:
-            food_x+=100
-            food_y+=100
+        if food_x>=danger[i].x-10 and food_y==danger[i].y-10 and food_x<=danger[i].xf and food_y<=danger[i].yf:
+            food_x = food_x-(danger[i].xf)
+            food_y = food_y-(danger[i].yf)
     return food_x,food_y
 
 
@@ -140,8 +167,7 @@ def game():
     snake_start(snake)
     food_x,food_y=food()
     print(food_x, food_y)
-    score = 60
-    score=60
+    score = 10*len(snake)
     x = 0
     y = 0
     x_change = 0
@@ -195,21 +221,20 @@ def game():
         if snake[0].x < food_x+10 and snake[0].x > food_x-10 and snake[0].y < food_y+10 and snake[0].y >food_y-10:
             if pygame.mixer.get_init():
                 pygame.mixer.Sound.play(got_food)
-            score = score + 10
+            score = 10*len(snake)
             food_x,food_y=food()
             eat = True
 
         if escap==False:
             escap=check_death()
         if escap==True:
-            pygame.mixer.music.stop()
             if pygame.mixer.get_init():
                 pygame.mixer.music.stop()
                 pygame.mixer.music.load("E:\\CGM\\snakepy\\dead.wav")
                 pygame.mixer.music.play()
                 pygame.mixer.music.stop()
         game_display.fill(green)
-
+        scoredisp(score)
         pygame.draw.rect(game_display, black, (food_x, food_y, factor, factor))
         drawsnake(snake)
 

@@ -20,7 +20,6 @@ clock=pygame.time.Clock()
 #image of snake for menu TODO: maybe make it move if possible
 kawaiisnake=pygame.image.load("E:\CGM\snakepy\kawaiisnakexx.png")
 bg=pygame.image.load("E:\CGM\snakepy\8bitbg.png")
-gobg=pygame.image.load("E:\CGM\snakepy\gobg.png")
 
 #display fn for all clipart TODO: dont you dare make another one
 
@@ -67,7 +66,7 @@ def newgame():
         pygame.mixer.music.stop()
     print("w1")
     snake.game()
-    options.clipdisp(0,0,gobg)
+    options.clipdisp(0,0,bg)
     gameOver()
     options.clipdisp(0,0,bg)
     if pygame.mixer.get_init():
